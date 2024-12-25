@@ -4,6 +4,7 @@ use eframe::egui;
 
 mod app;
 mod rom;
+mod hw;
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
@@ -32,7 +33,12 @@ pub fn launch() -> eframe::Result {
             native_options,
             Box::new(|cc| Ok(Box::new(app::NersApp::new(cc)))),
         )
-    })
+    })?;
+
+    // don't wait for the console thread if it's still running
+    rt.shutdown_background();
+
+    Ok(())
 }
 
 // When compiling to web using trunk:
