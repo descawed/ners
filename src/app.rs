@@ -1,5 +1,5 @@
 use std::future::Future;
-use std::path::PathBuf;
+use std::io::Cursor;
 use std::sync::{Arc, Mutex};
 
 use eframe::Frame;
@@ -7,15 +7,17 @@ use egui::Context;
 use log::{debug, error, info};
 use rfd::AsyncFileDialog;
 
+use crate::rom::Cartridge;
+
 // TODO: add serialization for app
 pub struct NersApp {
-    rom_path: Arc<Mutex<Option<PathBuf>>>,
+    cartridge: Arc<Mutex<Option<Cartridge>>>,
 }
 
 impl Default for NersApp {
     fn default() -> Self {
         Self {
-            rom_path: Arc::new(Mutex::new(None)),
+            cartridge: Arc::new(Mutex::new(None)),
         }
     }
 }
@@ -43,20 +45,25 @@ impl eframe::App for NersApp {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Open").clicked() {
-                        let rom_path = self.rom_path.clone();
+                        let cartridge = self.cartridge.clone();
                         Self::spawn_async(async move {
                             let file = AsyncFileDialog::new()
-                                .add_filter("NES ROMs", &["nes", "unf", "unif"])
+                                .add_filter("NES ROMs", &["nes"/*, "unf", "unif"*/])
                                 .pick_file()
                                 .await;
                             
-                            match (rom_path.lock(), file.map(|h| h.path().to_path_buf())) {
-                                (Ok(mut rom_path_ref), Some(path)) => {
-                                    info!("User selected ROM at {}", path.as_os_str().to_str().unwrap_or("<unknown>"));
-                                    *rom_path_ref = Some(path);
-                                }
+                            let Some(file) = file else {
+                                debug!("User cancelled ROM selection");
+                                return;
+                            };
+
+                            info!("User selected ROM at {}", file.path().as_os_str().to_str().unwrap_or("<unknown>"));
+                            let data = file.read().await;
+                            
+                            match (cartridge.lock(), Cartridge::from_rom(Cursor::new(data))) {
+                                (Ok(mut cartridge_ref), Ok(cartridge)) => *cartridge_ref = Some(cartridge),
                                 (Err(e), _) => error!("Failed to lock ROM path for update: {:?}", e),
-                                (_, None) => debug!("User cancelled ROM selection"),
+                                (_, Err(e)) => error!("Failed to load ROM: {}", e),
                             }
                         });
                     }

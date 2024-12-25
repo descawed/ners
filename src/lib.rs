@@ -3,6 +3,7 @@ use std::fs::File;
 use eframe::egui;
 
 mod app;
+mod rom;
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
