@@ -23,11 +23,15 @@ pub fn launch() -> eframe::Result {
         ..Default::default()
     };
 
-    eframe::run_native(
-        "ners",
-        native_options,
-        Box::new(|cc| Ok(Box::new(app::NersApp::new(cc)))),
-    )
+    let rt = tokio::runtime::Runtime::new().map_err(|e| eframe::Error::AppCreation(Box::new(e)))?;
+
+    rt.block_on(async {
+        eframe::run_native(
+            "ners",
+            native_options,
+            Box::new(|cc| Ok(Box::new(app::NersApp::new(cc)))),
+        )
+    })
 }
 
 // When compiling to web using trunk:
@@ -36,7 +40,7 @@ pub fn launch() -> eframe::Result {
     use eframe::wasm_bindgen::JsCast as _;
 
     // Redirect `log` message to `console.log` and friends:
-    eframe::WebLogger::init(log::LevelFilter::Debug).ok();
+    eframe::WebLogger::init(log::LevelFilter::Debug).map_err(|e| eframe::Error::AppCreation(Box::new(e)))?;
 
     let web_options = eframe::WebOptions::default();
 
