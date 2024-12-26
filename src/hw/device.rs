@@ -13,7 +13,7 @@ pub struct Device {
 }
 
 impl Device {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             clocks: Vec::new(),
             prior_elapsed: Duration::from_secs(0),
@@ -25,7 +25,7 @@ impl Device {
         self.clocks.push(clock);
     }
     
-    pub fn is_paused(&self) -> bool {
+    pub const fn is_paused(&self) -> bool {
         self.current_start.is_none()
     }
     

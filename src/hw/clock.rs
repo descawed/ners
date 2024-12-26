@@ -11,7 +11,7 @@ struct Divider {
 }
 
 impl Divider {
-    fn new(divider: u64, component: ComponentRef) -> Self {
+    const fn new(divider: u64, component: ComponentRef) -> Self {
         Self {
             divider,
             ticks_remaining: 0,
@@ -27,7 +27,7 @@ pub struct Clock {
 }
 
 impl Clock {
-    pub fn new(period: f64) -> Self {
+    pub const fn new(period: f64) -> Self {
         Self {
             period,
             elapsed: Duration::from_secs(0),
@@ -64,7 +64,7 @@ impl Clock {
         Ok(())
     }
     
-    pub fn elapsed(&self) -> Duration {
+    pub const fn elapsed(&self) -> Duration {
         self.elapsed
     }
 }

@@ -23,15 +23,15 @@ impl Nes {
         }
     }
     
-    pub fn is_cartridge_loaded(&self) -> bool {
+    pub const fn is_cartridge_loaded(&self) -> bool {
         self.cartridge.is_some()
     }
     
-    pub fn is_paused(&self) -> bool {
+    pub const fn is_paused(&self) -> bool {
         self.device.is_paused()
     }
     
-    pub fn is_running(&self) -> bool {
+    pub const fn is_running(&self) -> bool {
         self.is_cartridge_loaded() && !self.is_paused()
     }
     
@@ -47,7 +47,7 @@ impl Nes {
         self.cartridge = Some(cartridge);
     }
     
-    pub fn eject_cartridge(&mut self) -> Option<Cartridge> {
+    pub const fn eject_cartridge(&mut self) -> Option<Cartridge> {
         self.cartridge.take()
     }
     
